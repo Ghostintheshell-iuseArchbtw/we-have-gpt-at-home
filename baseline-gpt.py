@@ -2,7 +2,7 @@ import requests
 import json
 
 # Local LLM server URL and port
-server_url = 'http://192.168.1.155:2333/v1/chat/completions'
+server_url = 'http://192.168.1.155:2333/v1/chat/completions'  ##### YOUR LMSTUDIO IPADDRESS AND PORT HERE #########
 
 def make_inference_request(prompt):
     # Request payload
