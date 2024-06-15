@@ -12,7 +12,7 @@ def make_inference_request(prompt):
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
-        "max_tokens": 150,  # Limit max tokens for response
+        "max_tokens": -1,  # PARAMETERS YOU MAY WANT 
         "stream": True
     }
 
