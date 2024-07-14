@@ -4,14 +4,13 @@ import requests
 import json
 import threading
 import pyttsx3
-from colorama import init
 from tkinter import filedialog, messagebox
 
 # Initialize text-to-speech engine
 engine = pyttsx3.init()
 
 # Local LLM server URL and port
-server_url = 'http://192.168.1.155:2333/v1/chat/completions'
+server_url = 'http://192.168.1.155:2334/v1/chat/completions'
 
 # Parameters
 temperature = 0.7
@@ -29,14 +28,15 @@ class UserProfile:
 # Dummy user profile (replace with actual implementation)
 current_user = UserProfile(name="User", avatar="default_avatar.png")
 
+# Conversation history
+conversation_history = []
+
 # Functions
-def make_inference_request(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty):
+def make_inference_request():
+    global conversation_history
     # Request payload
     payload = {
-        "messages": [
-            {"role": "system", "content": "You are a helpful coding assistant."},
-            {"role": "user", "content": prompt}
-        ],
+        "messages": conversation_history,
         "temperature": temperature,
         "max_tokens": max_tokens,
         "top_p": top_p,
@@ -48,14 +48,28 @@ def make_inference_request(prompt, temperature, max_tokens, top_p, frequency_pen
     try:
         with requests.post(server_url, json=payload, headers={"Content-Type": "application/json"}, stream=True) as response:
             if response.status_code == 200:
+                response_text = ""
                 for line in response.iter_lines():
                     if line:
-                        response_json = json.loads(line)
-                        if 'choices' in response_json:
-                            for choice in response_json['choices']:
-                                response_message = choice['message']['content']
-                                update_chat_window(f"GPT: {response_message}\n", sender="assistant")
-                                speak(response_message)
+                        line_str = line.decode('utf-8').strip()
+                        if line_str.startswith('data: '):
+                            line_str = line_str[len('data: '):]
+
+                        if line_str == '[DONE]':
+                            break
+
+                        try:
+                            response_json = json.loads(line_str)
+                            if 'choices' in response_json:
+                                for choice in response_json['choices']:
+                                    delta_content = choice.get('delta', {}).get('content', '')
+                                    response_text += delta_content
+                        except json.JSONDecodeError:
+                            update_chat_window(f"Non-JSON response: {line_str}\n", sender="error")
+
+                if response_text:
+                    update_chat_window(response_text, sender="assistant")
+                    speak(response_text)
             else:
                 update_chat_window(f"Request failed with status code: {response.status_code}\n", sender="error")
                 update_chat_window(f"Response: {response.text}\n", sender="error")
@@ -68,9 +82,10 @@ def update_chat_window(message, sender="user"):
     chat_window.configure(state=ctk.NORMAL)
     if sender == "user":
         chat_window.insert(ctk.END, f"{current_user.name}: {message}\n", "user")
+        conversation_history.append({"role": "user", "content": message})
     elif sender == "assistant":
         chat_window.insert(ctk.END, f"GPT: {message}\n", "assistant")
-        speak(message)  # Speak the assistant's response
+        conversation_history.append({"role": "assistant", "content": message})
     elif sender == "error":
         chat_window.insert(ctk.END, f"Error: {message}\n", "error")
     chat_window.configure(state=ctk.DISABLED)
@@ -81,13 +96,14 @@ def on_send(event=None):
     if user_input.strip():
         update_chat_window(user_input, sender="user")
         loading_label.pack(pady=5)
-        threading.Thread(target=make_inference_request, args=(user_input, temperature, max_tokens, top_p, frequency_penalty, presence_penalty)).start()
+        threading.Thread(target=make_inference_request).start()
         user_entry.delete(0, ctk.END)
 
 def clear_chat():
     chat_window.configure(state=ctk.NORMAL)
     chat_window.delete(1.0, ctk.END)
     chat_window.configure(state=ctk.DISABLED)
+    conversation_history.clear()
 
 def update_settings():
     global temperature, max_tokens, top_p, frequency_penalty, presence_penalty
@@ -114,9 +130,9 @@ def speak(text):
     engine.runAndWait()
 
 def toggle_theme():
-    current_mode = ctk.ttk.Style().theme_use()
-    new_mode = "clam" if current_mode == "default" else "default"
-    ctk.ttk.Style().theme_use(new_mode)
+    current_mode = ctk.get_appearance_mode()
+    new_mode = "light" if current_mode == "dark" else "dark"
+    ctk.set_appearance_mode(new_mode)
 
 # GUI setup
 ctk.set_appearance_mode("dark")
@@ -200,58 +216,8 @@ pres_penalty_entry.insert(0, str(presence_penalty))
 update_button = ctk.CTkButton(settings_frame, text="Update Settings", command=update_settings)
 update_button.grid(row=6, column=0, columnspan=2, pady=10)
 
-theme_toggle_button = ctk.CTkButton(settings_frame, text="Toggle Theme", command=toggle_theme)
-theme_toggle_button.grid(row=7, column=0, columnspan=2, pady=10)
-# Settings label
-settings_label = tk.Label(settings_frame, text="Settings", font=("Arial", 16))
-settings_label.grid(row=0, column=0, columnspan=2, pady=10)
+theme_button = ctk.CTkButton(settings_frame, text="Toggle Theme", command=toggle_theme)
+theme_button.grid(row=7, column=0, columnspan=2, pady=10)
 
-# Temperature setting
-temp_label = tk.Label(settings_frame, text="Temperature:")
-temp_label.grid(row=1, column=0, pady=5, padx=5, sticky="w")
-temp_entry = tk.Entry(settings_frame, width=50)
-temp_entry.grid(row=1, column=1, pady=5, padx=5)
-temp_entry.insert(0, str(temperature))  # Assuming temperature is defined somewhere
-
-# Max Tokens setting
-tokens_label = tk.Label(settings_frame, text="Max Tokens:")
-tokens_label.grid(row=2, column=0, pady=5, padx=5, sticky="w")
-tokens_entry = tk.Entry(settings_frame, width=50)
-tokens_entry.grid(row=2, column=1, pady=5, padx=5)
-tokens_entry.insert(0, str(max_tokens))  # Assuming max_tokens is defined somewhere
-
-# Top P setting
-top_p_label = tk.Label(settings_frame, text="Top P:")
-top_p_label.grid(row=3, column=0, pady=5, padx=5, sticky="w")
-top_p_entry = tk.Entry(settings_frame, width=50)
-top_p_entry.grid(row=3, column=1, pady=5, padx=5)
-top_p_entry.insert(0, str(top_p))  # Assuming top_p is defined somewhere
-
-# Frequency Penalty setting
-freq_penalty_label = tk.Label(settings_frame, text="Frequency Penalty:")
-freq_penalty_label.grid(row=4, column=0, pady=5, padx=5, sticky="w")
-freq_penalty_entry = tk.Entry(settings_frame, width=50)
-freq_penalty_entry.grid(row=4, column=1, pady=5, padx=5)
-freq_penalty_entry.insert(0, str(frequency_penalty)) # Assuming frequency_penalty is defined somewhere
-#Presence Penalty setting
-
-pres_penalty_label = tk.Label(settings_frame, text="Presence Penalty:")
-pres_penalty_label.grid(row=5, column=0, pady=5, padx=5, sticky="w")
-pres_penalty_entry = tk.Entry(settings_frame, width=50)
-pres_penalty_entry.grid(row=5, column=1, pady=5, padx=5)
-pres_penalty_entry.insert(0, str(presence_penalty)) # Assuming presence_penalty is defined somewhere
-#Update Settings button
-
-update_button = tk.Button(settings_frame, text="Update Settings", command=update_settings)
-update_button.grid(row=6, column=0, columnspan=2, pady=10) # Assuming update_settings is defined somewhere
-#Toggle Theme button
-
-theme_toggle_button = tk.Button(settings_frame, text="Toggle Theme", command=toggle_theme)
-theme_toggle_button.grid(row=7, column=0, columnspan=2, pady=10) # Assuming toggle_theme is defined somewhere
-#Speak Response button (for testing)
-
-speak_button = tk.Button(settings_frame, text="Speak Response", command=lambda: speak("This is a test speech response."))
-speak_button.grid(row=8, column=0, columnspan=2, pady=10)
-update_chat_window("Welcome to the Local LLM Chat!\nType 'exit' to end the conversation.\n\n")
-#Run Main
 root.mainloop()
+
