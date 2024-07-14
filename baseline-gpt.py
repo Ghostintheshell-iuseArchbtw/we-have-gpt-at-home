@@ -2,17 +2,20 @@ import requests
 import json
 
 # Local LLM server URL and port
-server_url = 'http://192.168.1.155:2333/v1/chat/completions'
+server_url = 'http://192.168.1.155:2334/v1/chat/completions'
+
+# Initialize chat history
+chat_history = []
 
 def make_inference_request(prompt):
+    # Add the new user message to the chat history
+    chat_history.append({"role": "user", "content": prompt})
+    
     # Request payload
     payload = {
-        "messages": [
-            {"role": "system", "content": "You are my AI Assistant."},
-            {"role": "user", "content": prompt}
-        ],
+        "messages": chat_history,
         "temperature": 0.7,
-        "max_tokens": -1,  # PARAMETERS YOU MAY WANT 
+        "max_tokens": 150,  # Example parameter; adjust as needed
         "stream": True
     }
 
@@ -40,6 +43,11 @@ def make_inference_request(prompt):
                                 if 'delta' in choice:
                                     delta_content = choice['delta'].get('content', '')
                                     print(delta_content, end='', flush=True)
+                                    
+                                    # Add GPT response to chat history
+                                    if delta_content:
+                                        chat_history.append({"role": "assistant", "content": delta_content})
+
                     except json.JSONDecodeError:
                         print(f"Non-JSON response: {line_str}")
 
