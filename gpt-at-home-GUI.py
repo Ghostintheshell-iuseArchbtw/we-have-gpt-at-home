@@ -3,14 +3,14 @@ import customtkinter as ctk
 import requests
 import json
 import threading
-import pyttsx3
+import tempfile
+import os
+from gtts import gTTS
+from playsound import playsound
 from tkinter import filedialog, messagebox
 
-# Initialize text-to-speech engine
-engine = pyttsx3.init()
-
 # Local LLM server URL and port
-server_url = 'http://192.168.1.155:2334/v1/chat/completions'
+server_url = 'http://192.168.1.187:9003/v1/chat/completions'
 
 # Parameters
 temperature = 0.7
@@ -126,8 +126,15 @@ def save_chat():
         messagebox.showinfo("Chat Saved", "Chat history saved successfully!")
 
 def speak(text):
-    engine.say(text)
-    engine.runAndWait()
+    try:
+        tts = gTTS(text=text, lang='en')
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
+            temp_file_path = temp_file.name
+            tts.save(temp_file_path)
+            playsound(temp_file_path)
+            os.remove(temp_file_path)
+    except Exception as e:
+        update_chat_window(f"Text-to-Speech Error: {e}\n", sender="error")
 
 def toggle_theme():
     current_mode = ctk.get_appearance_mode()
@@ -213,11 +220,10 @@ pres_penalty_entry = ctk.CTkEntry(settings_frame, width=50)
 pres_penalty_entry.grid(row=5, column=1, pady=5, padx=5)
 pres_penalty_entry.insert(0, str(presence_penalty))
 
-update_button = ctk.CTkButton(settings_frame, text="Update Settings", command=update_settings)
-update_button.grid(row=6, column=0, columnspan=2, pady=10)
+update_settings_button = ctk.CTkButton(settings_frame, text="Update Settings", command=update_settings)
+update_settings_button.grid(row=6, column=0, columnspan=2, pady=10)
 
 theme_button = ctk.CTkButton(settings_frame, text="Toggle Theme", command=toggle_theme)
 theme_button.grid(row=7, column=0, columnspan=2, pady=10)
 
 root.mainloop()
-
