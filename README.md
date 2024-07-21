@@ -10,7 +10,16 @@ Welcome to Local LLM Chat, where your AI conversations get a major upgrade. This
 
   ## SIMPLE INSTALLATION
   pip install -r requirments.txt
+
+  
   sudo apt install alas-utils
+
+  
   reset your terminal 
+
+
+or source your bash/zsh/fish .rc/.env lol
+
+  
   python3 WHATERVERSCRIPT.PY
 
