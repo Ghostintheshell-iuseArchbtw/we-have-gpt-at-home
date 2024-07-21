@@ -1,39 +1,16 @@
-# we-have-gpt-at-home
-Local LLM Chat Interface
-This repository contains two interfaces for interacting with a local language model (LLM) server:
+Local LLM Chat
 
-Graphical User Interface (GUI)
-Command Line Interface (CLI)
-Table of Contents
-Installation
-Usage
-GUI Interface
-CLI Interface
-Configuration
-Contributing
-License
-Installation
-Clone the repository:
+Welcome to Local LLM Chat, where your AI conversations get a major upgrade. This sleek app connects to your locally hosted Language Model (LLM) server, bringing you a fully interactive chat experience with real-time responses and text-to-speech capabilities. Here’s what it does:
 
-sh
-Copy code
-git clone https://github.com/yourusername/local-llm-chat.git
-cd local-llm-chat
-Install the required dependencies:
+    Interactive Chat Interface: Engage in seamless conversations with your AI.
+    Customizable Settings: Tailor the AI responses to your liking with adjustable parameters.
+    Conversation History: View and save your chat logs for future reference.
+    Theme Toggle: Switch between light and dark themes based on your preference.
+    Text-to-Speech: Hear responses read aloud, making your interactions more engaging
 
-sh
-Copy code
-pip install -r requirements.txt
-Usage
-GUI Interface
-To start the GUI interface, run the following command:
+  ## SIMPLE INSTALLATION
+  pip install -r requirments.txt
+  sudo apt install alas-utils
+  reset your terminal 
+  python3 WHATERVERSCRIPT.PY
 
-sh
-Copy code
-python gui_chat.py
-Features
-Send Messages: Enter text in the input field and press Enter or click the "Send" button to send a message.
-Clear Chat: Click the "Clear Chat" button to clear the chat history.
-Save Chat: Click the "Save Chat" button to save the chat history to a file.
-Update Settings: Modify settings for temperature, max tokens, top P, frequency penalty, and presence penalty, then click "Update Settings" to apply changes.
-Toggle Theme: Click the "Toggle Theme" button to switch between light and dark modes.
