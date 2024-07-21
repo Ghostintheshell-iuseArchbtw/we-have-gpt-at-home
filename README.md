@@ -8,6 +8,9 @@ Welcome to Local LLM Chat, where your AI conversations get a major upgrade. This
     Theme Toggle: Switch between light and dark themes based on your preference.
     Text-to-Speech: Hear responses read aloud, making your interactions more engaging
 
+#### COMING SOON FULL SPEECH TO SPEECH NOT JUST ONE WAY SPEECH
+
+
   ## SIMPLE INSTALLATION
   pip install -r requirments.txt
 
