@@ -1,6 +1,3 @@
-Got it! Here's a simple README file for your new D&D GPT chat application:
-
-```markdown
 # D&D GPT Chat Application
 
 Welcome to D&D GPT Chat, where your Dungeons & Dragons adventures come to life with AI! This immersive app connects to your locally hosted Language Model (LLM) server, providing you with a fully interactive chat experience tailored for D&D enthusiasts. Here’s what it offers:
@@ -52,7 +49,7 @@ Follow these steps to get your D&D GPT Chat up and running:
    Start the D&D GPT Chat application:
 
    ```bash
-   python3 script.py
+   python3 main.py
    ```
 
 ## Features
@@ -66,9 +63,3 @@ Follow these steps to get your D&D GPT Chat up and running:
 #### Note: Full speech-to-speech interaction is coming soon!
 
 Enjoy your adventures with D&D GPT Chat!
-
-
-
-```
-
-Feel free to customize this README file further to suit your specific project needs.
